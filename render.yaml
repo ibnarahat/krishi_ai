@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: krishi-ai
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MODEL_DEFAULT
+        value: gemini-3.8-flash
+      - key: MODEL_QUICK
+        value: gemini-3.5-flash-lite
+      - key: RATE_LIMIT_PER_MIN
+        value: "40"
+      - key: MAX_TOKENS
+        value: "4000"
