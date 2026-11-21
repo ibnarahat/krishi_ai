@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>কৃষি AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+/* VOICE: calm, practical, like a trusted upazila krishi officer
+   IDEA: an extension office desk with a board of specialists who light up as they work
+   PICTURE: the working chat / scanner / planner itself, beside a live agent board
+   COLOUR and TYPE: paddy green dominant, mustard-flower yellow support, brick red for warnings; Hind Siliguri
+   LAYOUT: green header band with tabs, work area left, agent board right, stacked on phones */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0e1511);--ink:light-dark(#14231b,#e5efe8);--mute:light-dark(#566a5e,#9fb3a6);
+--g:#0b4a2f;--g2:light-dark(#e6f1ea,#16261d);--line:light-dark(#d6e3da,#24372b);
+--y:#f2c230;--y2:light-dark(#fff6d6,#2b2612);--r:#c8442b;--card:light-dark(#fff,#131d17)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;overflow-x:clip}
+header{background:var(--g);color:#fff;padding:clamp(22px,3vw,40px) max(5vw,16px) 0;
+background-image:repeating-linear-gradient(170deg,transparent 0 22px,rgba(255,255,255,.04) 22px 24px)}
+.top{max-width:1240px;margin:0 auto}
+h1{margin:0;font-size:clamp(32px,5vw,46px);line-height:1.05;font-weight:700}
+h1 span{color:var(--y)}
+.sub{margin:8px 0 20px;max-width:62ch;color:#d4e8dc;font-size:17px}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav a{color:#e5f2ea;text-decoration:none;padding:11px 18px;border-radius:12px 12px 0 0;font-weight:600;min-height:44px}
+nav a.on{background:var(--bg);color:var(--ink)}
+nav a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+main{max-width:1240px;margin:0 auto;padding:22px max(5vw,16px) 40px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+@media(max-width:900px){main{grid-template-columns:minmax(0,1fr)}}
+.view{display:none}.view.on{display:block}
+.banner{background:var(--y2);border:1px solid var(--y);padding:12px 14px;border-radius:10px;margin-bottom:14px;display:none}
+#log{display:flex;flex-direction:column;gap:14px;min-height:360px;max-height:64vh;overflow-y:auto;padding:4px 2px 10px}
+.msg{max-width:92%}.msg .body{padding:12px 16px;border-radius:14px}
+.msg.user{align-self:flex-end}.msg.user .body{background:var(--g);color:#fff;border-bottom-right-radius:4px}
+.msg.ai{align-self:flex-start}.msg.ai .body{background:var(--g2);border-bottom-left-radius:4px}
+.body h2,.body h3{font-size:18px;margin:14px 0 4px;color:light-dark(var(--g),#8fd3aa)}
+.body h2{font-size:21px}.body p{margin:6px 0}.body ul,.body ol{padding-inline-start:22px;margin:6px 0}
+.body table{border-collapse:collapse;width:100%;margin:8px 0;font-size:15px;display:block;overflow-x:auto}
+.body th,.body td{border:1px solid var(--line);padding:6px 8px;text-align:start;vertical-align:top}
+.body th{background:var(--y2)}
+.think{color:var(--mute);animation:p 1.4s ease-in-out infinite}
+@keyframes p{50%{opacity:.45}}@media(prefers-reduced-motion:reduce){.think{animation:none}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{background:var(--y2);border:1px solid light-dark(#ecd68a,#4a4120);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:15px;cursor:pointer;min-height:44px}
+.ask{display:flex;gap:8px;margin-top:10px}
+textarea,input,select{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.ask textarea{resize:vertical;min-height:52px}
+button.go{background:var(--g);color:#fff;border:0;border-radius:10px;padding:0 22px;font:inherit;font-weight:700;min-height:48px;cursor:pointer;flex:none}
+button.go:disabled{opacity:.5;cursor:wait}
+button.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer;min-height:40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+label{display:block;font-size:14px;font-weight:600;color:var(--mute)}label>*{margin-top:4px}
+.drop{border:2px dashed light-dark(#9cc3ab,#2f5a41);border-radius:14px;padding:22px;text-align:center;background:var(--g2);cursor:pointer;margin-bottom:12px}
+.thumbs{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.thumbs figure{margin:0;position:relative;width:96px;height:96px}
+.thumbs img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.thumbs button{position:absolute;top:-8px;right:-8px;width:28px;height:28px;border-radius:50%;border:0;background:var(--r);color:#fff;cursor:pointer}
+.out{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 18px 14px;display:none}
+.out .bar{display:flex;justify-content:flex-end;padding-top:10px}
+.notes{margin-top:10px;font-size:15px}.notes summary{cursor:pointer;color:var(--mute);font-weight:600;min-height:32px}
+.notes h4{margin:12px 0 2px;color:light-dark(var(--g),#8fd3aa)}
+.ex{font-size:13px;color:var(--mute);margin:0 0 10px}
+aside{position:sticky;top:16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+@media(max-width:900px){aside{position:static}}
+aside h2{font-size:18px;margin:0 0 2px}aside p{margin:0 0 12px;font-size:14px;color:var(--mute)}
+.ag{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.ag b{font-weight:600;font-size:15px;line-height:1.25;display:block}.ag small{color:var(--mute);font-size:13px}
+.ag i{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.ag em{font-style:normal;font-size:13px;color:var(--mute);white-space:nowrap}
+.ag.coord b{color:light-dark(var(--g),#8fd3aa)}
+.ag[data-s=queued] i{background:var(--y)}
+.ag[data-s=work] i{background:var(--y);box-shadow:0 0 0 4px rgba(242,194,48,.35)}
+.ag[data-s=done] i{background:#2e9b5e}.ag[data-s=err] i{background:var(--r)}
+.ag[data-s=skip]{opacity:.45}
+footer{max-width:1240px;margin:0 auto;padding:0 max(5vw,16px) 32px;font-size:14px;color:var(--mute)}
+</style>
+</head>
+<body>
+<header><div class="top">
+<h1>কৃষি <span>AI</span></h1>
+<p class="sub">১১ জন বিশেষজ্ঞ এজেন্ট একসাথে আপনার প্রশ্ন বিশ্লেষণ করে। একজন সমন্বয়কারী তাদের মতামত মিলিয়ে সহজ বাংলায় একটি পরামর্শ দেন।</p>
+<nav><a href="#chat" data-v="chat">পরামর্শ চ্যাট</a><a href="#scan" data-v="scan">রোগ স্ক্যানার</a><a href="#plan" data-v="plan">স্মার্ট চাষ পরিকল্পনা</a></nav>
+</div></header>
+<main>
+<div>
+<div class="banner" id="banner">সার্ভারের সাথে সংযোগ পাওয়া যায়নি। একটু পরে পেজটি আবার খুলুন।</div>
+
+<section class="view" id="v-chat">
+<div id="log"><div class="msg ai"><div class="body"><p>আসসালামু আলাইকুম! আমি কৃষি AI। সবজি চাষ, মৌসুম, রোগ, পোকা, সার, সেচ বা খরচ নিয়ে যেকোনো প্রশ্ন করুন। ফসলের নাম, গাছের বয়স আর আপনার জেলা বললে আরও সঠিক পরামর্শ দিতে পারব।</p></div></div></div>
+<div class="chips" id="chips"></div>
+<form class="ask" id="askf"><textarea id="q" rows="2" placeholder="আপনার প্রশ্ন লিখুন… যেমন: টমেটো গাছের পাতা কুঁকড়ে যাচ্ছে"></textarea><button class="go" id="send">পাঠান</button></form>
+</section>
+
+<section class="view" id="v-scan">
+<label class="drop" for="file"><b>গাছের ছবি দিন</b><br><span style="font-weight:400">পাতা, কাণ্ড, ফল বা পুরো গাছ। সর্বোচ্চ ৪টি ছবি (JPG, PNG, WEBP)</span></label>
+<input type="file" id="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+<div class="thumbs" id="thumbs"></div>
+<div class="grid">
+<label>কোন সবজি?<input id="s-crop" placeholder="যেমন: বেগুন"></label>
+<label>গাছের বয়স<input id="s-age" placeholder="যেমন: রোপণের ৪৫ দিন"></label>
+<label>কতগুলো গাছ আক্রান্ত?<input id="s-count" placeholder="যেমন: ২০০টির মধ্যে ১৫টি"></label>
+<label>লক্ষণ কবে থেকে?<input id="s-when" placeholder="যেমন: ৫ দিন আগে"></label>
+<label>জেলা<input id="s-dist" placeholder="যেমন: বগুড়া"></label>
+<label>সম্প্রতি সার বা কীটনাশক দিয়েছেন?<input id="s-chem" placeholder="যেমন: ৭ দিন আগে ইউরিয়া"></label>
+</div>
+<label style="margin-top:12px">আর কিছু লক্ষ্য করেছেন?<textarea id="s-note" rows="2" placeholder="যেমন: দুপুরে গাছ নেতিয়ে পড়ে, সকালে ঠিক হয়"></textarea></label>
+<p style="margin:14px 0 0"><button class="go" id="scanbtn">ছবি বিশ্লেষণ করুন</button></p>
+<div class="out" id="scanout"><div class="bar"><button class="ghost" data-copy="scanout">কপি করুন</button></div><div class="body" id="scanbody"></div></div>
+</section>
+
+<section class="view" id="v-plan">
+<p class="ex">উদাহরণ তথ্য দেওয়া আছে। নিজের তথ্য বসিয়ে পরিকল্পনা তৈরি করুন।</p>
+<div class="grid">
+<label>জেলা ও উপজেলা<input id="p-loc" value="যশোর, ঝিকরগাছা"></label>
+<label>জমির পরিমাণ<input id="p-land" value="৩৩"></label>
+<label>জমির একক<select id="p-unit"><option>শতাংশ (ডেসিমাল)</option><option>কাঠা</option><option>বিঘা</option><option>একর</option><option>হেক্টর</option><option>ছাদ / টব (বর্গফুট)</option></select></label>
+<label>বাজেট (টাকা)<input id="p-bud" value="৪০,০০০"></label>
+<label>মাটির ধরন<select id="p-soil"><option>দোআঁশ</option><option>বেলে দোআঁশ</option><option>এঁটেল দোআঁশ</option><option>এঁটেল</option><option>বেলে</option><option>জানি না</option></select></label>
+<label>মাটির pH (জানা থাকলে)<input id="p-ph" placeholder="যেমন: ৬.২"></label>
+<label>পানির সুবিধা<select id="p-water"><option>পর্যাপ্ত</option><option>মাঝারি</option><option>কম</option><option>বর্ষায় জলাবদ্ধতা হয়</option></select></label>
+<label>সেচ ব্যবস্থা<input id="p-irr" value="অগভীর নলকূপ (শ্যালো মেশিন)"></label>
+<label>পছন্দের ফসল<input id="p-crops" value="টমেটো, ফুলকপি, লাউ"></label>
+<label>চাষের অভিজ্ঞতা<select id="p-exp"><option>নতুন</option><option selected>২–৫ বছর</option><option>৫ বছরের বেশি</option></select></label>
+<label>মৌসুম<select id="p-season"><option>রবি (শীতকাল)</option><option>খরিফ-১ (গ্রীষ্ম)</option><option>খরিফ-২ (বর্ষা)</option><option>সারা বছর / পরামর্শ দিন</option></select></label>
+<label>উদ্দেশ্য<select id="p-goal"><option>বাণিজ্যিক বিক্রি</option><option>নিজের খাবার</option><option>দুটোই</option></select></label>
+</div>
+<label style="margin-top:12px">স্থানীয় বাজারদর (জানা থাকলে)<textarea id="p-price" rows="2" placeholder="যেমন: টমেটো পাইকারি ৩০ টাকা কেজি"></textarea></label>
+<p style="margin:14px 0 0"><button class="go" id="planbtn">পরিকল্পনা তৈরি করুন</button></p>
+<div class="out" id="planout"><div class="bar"><button class="ghost" data-copy="planout">কপি করুন</button></div><div class="body" id="planbody"></div></div>
+</section>
+</div>
+
+<aside><h2>এজেন্ট বোর্ড</h2><p>কে এখন কাজ করছে, এখানে দেখুন</p><div id="board"></div></aside>
+</main>
+<footer>এটি AI-ভিত্তিক প্রাথমিক পরামর্শ, নিশ্চিত রোগনির্ণয় নয়। রাসায়নিক ব্যবহারের আগে এবং দ্রুত ছড়ানো সমস্যায় উপজেলা কৃষি অফিস বা কৃষি কল সেন্টার ১৬১২৩-এ যোগাযোগ করুন।</footer>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const md=t=>{try{return DOMPurify.sanitize(marked.parse(t||''))}catch(e){return '<p style="white-space:pre-wrap">'+esc(t)+'</p>'}};
+let sample=null,busy=false,imgOK=false,imgs=[];
+const texts={};
+
+const RULES=`You are part of Krishi AI, a multi-agent agricultural advisory system for Bangladesh, serving farmers, agriculture students, gardeners and commercial vegetable growers.
+Write in simple Bengali (বাংলা); add English technical terms in brackets only when helpful. Consider Bangladesh's climate, regions (cold north, saline coast, haor, hill tracts, char lands), soils and seasons: Rabi (mid-Oct to mid-Mar), Kharif-1 (mid-Mar to mid-Jul), Kharif-2 (mid-Jul to mid-Oct). Base advice on BARI, DAE, BARC and BRRI guidance as you know it.
+SAFETY: Never invent facts, variety names, disease names, research findings, pesticide product names, doses or spray schedules. Never suggest mixing chemicals. Prefer IPM, biological, cultural and mechanical control. If chemical control may be needed, say to use only DAE-registered products exactly per label, chosen with the local agriculture officer, with protective equipment and respecting the pre-harvest interval. Never give a definitive diagnosis from weak evidence; give alternatives. Do not give fertilizer quantities without crop, soil and crop-stage context; when you do, call it general guidance to be adjusted by soil test. Label all costs, yields and profits as estimates, never guarantees.`;
+const SPEC=`Write your specialist findings for the Master Coordinator (not directly to the farmer): concise Bengali bullet points, about 180 words, no greeting. Flag uncertainty and any information you still need from the farmer.`;
+
+const A=[
+{id:'veg',n:'সবজি বিশেষজ্ঞ',e:'Vegetable Expert',k:'varieties, seeds, seedbed, transplanting, spacing, regional suitability',p:'VEGETABLE EXPERT: suitable varieties (name BARI varieties only if you are confident they exist, otherwise say "স্থানীয় উন্নত/হাইব্রিড জাত"), seed selection, seedbed preparation, transplanting age, spacing, regional suitability.'},
+{id:'season',n:'মৌসুম ও আবহাওয়া',e:'Season & Weather Expert',k:'growing seasons, sowing and harvest months, weather risks',p:'SEASON & WEATHER EXPERT: best sowing, transplanting and harvest windows (Bangla and English months), temperature, rainfall, humidity and sunlight needs, regional differences, weather risks such as fog, cold waves, heavy rain, flood, drought, heat.'},
+{id:'disease',n:'রোগ নির্ণয়',e:'Plant Disease Diagnosis',k:'fungal, bacterial, viral diseases and look-alike disorders',p:'PLANT DISEASE DIAGNOSIS: likely fungal, bacterial or viral diseases plus look-alike nutrient deficiencies and physiological disorders. For each: Bengali and English name, key symptoms, cause, likely severity, immediate management, prevention. Rank by likelihood.'},
+{id:'pest',n:'পোকামাকড় ব্যবস্থাপনা',e:'Insect & Pest Management',k:'pests, damage signs, IPM, biological control',p:'INSECT & PEST MANAGEMENT: likely pests, damage symptoms, short life cycle, monitoring, IPM steps: sanitation, hand picking, yellow sticky traps, pheromone traps, nets, neem-based and biological options (for example Trichogramma or Bt where appropriate), cultural control.'},
+{id:'soil',n:'মাটি ও সার',e:'Soil & Fertilizer Expert',k:'soil type, pH, nutrients, deficiencies, compost, fertilizer',p:'SOIL & FERTILIZER EXPERT: soil type and pH effects, nutrient deficiency signs (N, P, K, S, Zn, B, Ca, Mg), organic options (compost, vermicompost, cow dung), balanced nutrition, timing of application, soil testing advice.'},
+{id:'irri',n:'সেচ ও খামার ব্যবস্থাপনা',e:'Irrigation & Farm Management',k:'irrigation, drainage, mulching, raised beds, rotation, rooftop',p:'IRRIGATION & FARM MANAGEMENT: water needs and frequency, drainage, waterlogging, drought stress, mulching, raised beds, crop rotation, intercropping, net-house, rooftop and container gardening.'},
+{id:'solve',n:'সমস্যা সমাধানকারী',e:'Agricultural Problem Solver',k:'symptom problems: yellowing, flower drop, wilting, no fruit, poor germination',p:'AGRICULTURAL PROBLEM SOLVER: understand the symptoms, list and rank possible causes, give the 2 to 4 most useful diagnostic questions, safe corrective actions, and how to prevent recurrence.'},
+{id:'biz',n:'খরচ ও ব্যবসা বিশ্লেষণ',e:'Farming Business & Cost Analysis',k:'costs, yield, prices, profit, market, storage',p:'FARMING BUSINESS & COST ANALYSIS: cost items (seed, land preparation, fertilizer, irrigation, labour, protection, harvest, transport, packaging), yield range, price, revenue, profit, break-even price. Show simple arithmetic. If no local price is given, state your assumed price clearly as approximate. Always label estimates.'},
+{id:'research',n:'গবেষণা ও যাচাই',e:'Research & Knowledge Agent',k:'fact-checking against BARI/DAE/BARC guidance, misconceptions',p:'AGRICULTURAL RESEARCH & VERIFICATION: check which points in this case are well established versus uncertain according to BARI, DAE, BARC and BRRI knowledge. Point out common misconceptions and risky practices. You cannot browse, so say when the farmer should confirm with the Upazila Agriculture Office or Krishi Call Centre 16123.'},
+{id:'scan',n:'রোগ স্ক্যানার (ছবি)',e:'AI Plant Disease Scanner',k:'',p:'AI PLANT DISEASE SCANNER: examine the photo(s). First check image quality: clarity, lighting, whether the affected part is visible, whether several plants are shown. Then list the visible evidence: discoloration, yellowing, browning, spots, powdery or mold growth, curling, holes, rot, stem lesions, wilting, insects or eggs. Give the most likely diagnosis, 2 to 3 alternatives, a confidence score from 0 to 100% that reflects model uncertainty (not a guarantee), severity (Low, Moderate, High or Unknown) and which extra photos are needed (full plant, upper and lower leaf surface, fruit or stem, root area). Do not estimate the field infection rate from one plant. If the images are unclear or not a plant, say so and do not guess. You may use up to 300 words.'},
+{id:'plan',n:'স্মার্ট চাষ পরিকল্পনাকারী',e:'Smart Farming Planner',k:'',p:''}];
+const by=Object.fromEntries(A.map(a=>[a.id,a]));
+const LBL={idle:'প্রস্তুত',queued:'নির্বাচিত',work:'কাজ করছে…',done:'সম্পন্ন',err:'সমস্যা',skip:'এবার নয়'};
+
+$('#board').innerHTML=`<div class="ag coord" id="ag-coord" data-s="idle"><i></i><div><b>প্রধান সমন্বয়কারী</b><small>Master Coordinator</small></div><em>প্রস্তুত</em></div>`+
+A.map(a=>`<div class="ag" id="ag-${a.id}" data-s="idle"><i></i><div><b>${a.n}</b><small>${a.e}</small></div><em>প্রস্তুত</em></div>`).join('');
+const st=(id,s)=>{const r=document.getElementById('ag-'+id);if(r){r.dataset.s=s;r.querySelector('em').textContent=LBL[s]}};
+const reset=sel=>{A.forEach(a=>st(a.id,sel.includes(a.id)?'queued':'skip'));st('coord','work')};
+
+const call=async(p,o={})=>(await sample(p,{cache:false,...o})).text;
+async function agent(id,task,o){
+  st(id,'work');
+  try{const t=await call(RULES+'\n\nYOUR ROLE: '+by[id].p+'\n\n'+SPEC+'\n\n'+task,o);st(id,'done');return{id,t}}
+  catch(e){st(id,'err');if(e&&(e.code==='rate_limited'||e.code==='not_granted'))throw e;return{id,t:''}}
+}
+async function pool(ids,fn,n=3){const out=[];let i=0;const w=async()=>{while(i<ids.length){const k=i++;out[k]=await fn(ids[k])}};await Promise.all(Array.from({length:Math.min(n,ids.length)},w));return out}
+const findings=res=>res.filter(r=>r.t).map(r=>'['+by[r.id].e+']\n'+r.t).join('\n\n');
+const notes=res=>{const ok=res.filter(r=>r.t);return ok.length?`<details class="notes"><summary>এজেন্টদের নোট দেখুন (${ok.length})</summary>${ok.map(r=>'<h4>'+by[r.id].n+'</h4>'+md(r.t)).join('')}</details>`:''};
+async function coordinate(p,el,extra=[]){
+  extra.forEach(x=>st(x,'work'));st('coord','work');
+  const r=await sample(p,{cache:false,onText:({text})=>{el.innerHTML=md(text)}});
+  el.innerHTML=md(r.text);extra.forEach(x=>st(x,'done'));st('coord','done');return r.text;
+}
+const errMsg=e=>'<p>'+(e&&e.code==='not_granted'?'অ্যাক্সেস কোড সঠিক নয়। সঠিক কোড দিন।':e&&e.code==='bad_key'?'সার্ভারের ANTHROPIC_API_KEY সঠিক নয়। Render-এ key টি আবার দেখুন।':e&&e.code==='rate_limited'?'এই মুহূর্তে অনেক অনুরোধ হয়েছে। এক মিনিট পর আবার চেষ্টা করুন।':'দুঃখিত, উত্তর তৈরি করা যায়নি। আবার চেষ্টা করুন।')+'</p>';
+const lock=b=>{busy=b;document.querySelectorAll('button.go').forEach(x=>x.disabled=b||!sample)};
+
+const COORD_CHAT=`You are the MASTER COORDINATOR of Krishi AI. Cross-check the specialist findings below, resolve any conflicts (prefer the safer, better-established advice), and write ONE unified answer to the farmer in simple Bengali markdown. Do not mention agents.
+For a crop problem (disease, pest, symptoms) use these headings where applicable: ### সমস্যার পরিচয় / ### সম্ভাব্য কারণ / ### কোন ফসল আক্রান্ত / ### লক্ষণ / ### রোগ বা সমস্যার মাত্রা / ### এখন কী করতে হবে / ### কীভাবে প্রতিরোধ করবেন / ### ভবিষ্যতে কী সতর্কতা নিতে হবে / ### বিশেষজ্ঞের পরামর্শ
+For general questions (seasons, varieties, how-to, costs) use a clear practical structure and a table when it helps. Give step-by-step actions. If essential information is missing, end with at most 3 short follow-up questions.`;
+const COORD_SCAN=`You are the MASTER COORDINATOR. Compare the image scanner's observations with the specialists' views, resolve conflicts, and write the final report in simple Bengali markdown in exactly this structure:
+## রোগ স্ক্যানার রিপোর্ট
+**ফসলের নাম:** / **সম্ভাব্য রোগ বা সমস্যা:** (Bengali and English name; scientific name only if you are certain) / **বিকল্প সম্ভাবনা:** / **আস্থার মাত্রা:** (percent, and say it is an AI estimate, not a guarantee) / **দৃশ্যমান লক্ষণ:** / **মাত্রা:** (কম / মাঝারি / বেশি / অজানা) / **সম্ভাব্য কারণ:**
+### এখনই যা করবেন
+### প্রস্তাবিত ব্যবস্থাপনা (subheadings: জৈব দমন, পরিচর্যা ও যান্ত্রিক দমন, রাসায়নিক দমন only via the agriculture officer and registered products, no product names or doses)
+### প্রতিরোধ
+### পরবর্তী পর্যবেক্ষণ
+### বিশেষজ্ঞ যাচাই (say whether a local agriculture officer should verify, and which extra photos would help)
+If the images were unclear, say so in the report, set severity to অজানা and ask for better photos instead of guessing.`;
+const COORD_PLAN=`You are the SMART FARMING PLANNER working with the MASTER COORDINATOR. Using the farmer's information and the specialists' findings, write a complete, practical plan in simple Bengali markdown with this structure:
+## স্মার্ট চাষ পরিকল্পনা
+**অবস্থান:** / **মোট জমি:** / **বাজেট:** / **মাটির অবস্থা:** / **পানির সুবিধা:** / **নির্বাচিত ফসল:** / **প্রস্তাবিত জাত:**
+### ফসল তুলনা (table comparing 2 to 4 crop options: suitability, investment, duration, water need, disease risk, market demand, profit potential; rank with these transparent criteria, no profit promises)
+### চাষের সময়সূচি (জমি তৈরি, বীজ বপন, চারা রোপণ, সার পরিকল্পনা, সেচ পরিকল্পনা, পোকা দমন, রোগ প্রতিরোধ, সম্ভাব্য ফসল তোলার সময়)
+### মাসভিত্তিক ক্যালেন্ডার (table: month, activities)
+### আর্থিক পরিকল্পনা (table: বীজ, সার, শ্রমিক, সেচ, অন্যান্য, মোট বিনিয়োগ, সম্ভাব্য উৎপাদন, সম্ভাব্য আয়, সম্ভাব্য নিট লাভ, ব্রেক-ইভেন দাম; state every assumed price and mark all figures as estimates)
+### জমির সর্বোত্তম ব্যবহার (intercropping, rotation, companion crops; avoid incompatible combinations)
+### ঝুঁকি ব্যবস্থাপনা (main risks, preventive actions, emergency steps)
+### চূড়ান্ত সুপারিশ (why this plan suits this farmer)`;
+
+/* chat */
+const msgs=[];
+const CHIPS=['টমেটো গাছের পাতা হলুদ হচ্ছে কেন?','রবি মৌসুমে কোন সবজি লাগাব?','বেগুনের ডগা ও ফল ছিদ্রকারী পোকা কীভাবে দমন করব?','ছাদে টবে কী কী সবজি করা যায়?','লাউ গাছে ফুল আসে কিন্তু ফল ঝরে যায়'];
+$('#chips').innerHTML=CHIPS.map(c=>`<button class="chip" type="button">${c}</button>`).join('');
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b)ask(b.textContent)});
+function addMsg(r,html){const d=document.createElement('div');d.className='msg '+r;d.innerHTML='<div class="body">'+html+'</div>';$('#log').append(d);$('#log').scrollTop=$('#log').scrollHeight;return d}
+async function route(q,hist){
+  const list=A.filter(a=>a.k).map(a=>`${a.id}: ${a.e} (${a.k})`).join('\n');
+  const p=`You are the router of the Master Coordinator in Krishi AI (Bangladesh agriculture). Specialist agents:\n${list}\n\nConversation:\n${hist}\nLatest farmer question: ${q}\n\nChoose the 2 to 4 agents most needed. Reply with JSON only, like {"agents":["veg","season"]}`;
+  let v=null;
+  try{v=sample.json?await sample.json(p,{modelTier:'quick'}):null}catch(e){if(e&&(e.code==='rate_limited'||e.code==='not_granted'))throw e}
+  if(typeof v==='string'){try{v=JSON.parse(v)}catch(e){v=null}}
+  if(!v||!Array.isArray(v.agents)){const t=await call(p,{modelTier:'quick'});const m=t.match(/\{[\s\S]*\}/);try{v=m?JSON.parse(m[0]):{}}catch(e){v={}}}
+  let sel=[...new Set((v.agents||[]).filter(i=>by[i]&&by[i].k))].slice(0,4);
+  if(!sel.length)sel=['solve','research'];
+  if((sel.includes('disease')||sel.includes('pest'))&&!sel.includes('research'))sel.push('research');
+  return sel;
+}
+async function ask(q){
+  q=q.trim();if(!q||busy||!sample)return;lock(true);
+  const hist=msgs.slice(-6).map(m=>(m.r==='user'?'Farmer: ':'Krishi AI: ')+m.t.slice(0,1200)).join('\n\n')||'(none)';
+  msgs.push({r:'user',t:q});addMsg('user',esc(q));$('#q').value='';
+  const d=addMsg('ai','<p class="think">প্রধান সমন্বয়কারী প্রশ্নটি বুঝছেন…</p>'),body=d.querySelector('.body');
+  try{
+    A.forEach(a=>st(a.id,'idle'));st('coord','work');
+    const sel=await route(q,hist);reset(sel);
+    body.innerHTML='<p class="think">'+sel.map(i=>by[i].n).join(', ')+' বিশ্লেষণ করছেন…</p>';
+    const ctx='EARLIER CONVERSATION:\n'+hist+'\n\nLATEST FARMER QUESTION:\n'+q;
+    const res=await pool(sel,id=>agent(id,ctx));
+    const ans=await coordinate(RULES+'\n\n'+COORD_CHAT+'\n\n'+ctx+'\n\nSPECIALIST FINDINGS:\n'+findings(res),body);
+    msgs.push({r:'ai',t:ans});d.insertAdjacentHTML('beforeend',notes(res));
+  }catch(e){body.innerHTML=errMsg(e);st('coord','err')}
+  lock(false);
+}
+$('#askf').addEventListener('submit',e=>{e.preventDefault();ask($('#q').value)});
+$('#q').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask($('#q').value)}});
+
+/* scanner */
+async function shrink(f){
+  try{const b=await createImageBitmap(f);const s=Math.min(1,1280/Math.max(b.width,b.height));const c=document.createElement('canvas');c.width=Math.round(b.width*s);c.height=Math.round(b.height*s);c.getContext('2d').drawImage(b,0,0,c.width,c.height);return await new Promise(r=>c.toBlob(x=>r(x||f),'image/jpeg',.85))}catch(e){return f}
+}
+const drawThumbs=()=>{$('#thumbs').innerHTML=imgs.map((b,i)=>`<figure><img src="${b._u}" alt="ছবি ${i+1}"><button type="button" data-i="${i}" aria-label="ছবি সরান">×</button></figure>`).join('')};
+$('#file').addEventListener('change',async e=>{for(const f of [...e.target.files]){if(imgs.length>=4)break;const b=await shrink(f);b._u=URL.createObjectURL(b);imgs.push(b)}e.target.value='';drawThumbs()});
+$('#thumbs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){imgs.splice(+b.dataset.i,1);drawThumbs()}});
+const field=(id,l)=>{const v=$(id).value.trim();return v?l+': '+v:''};
+$('#scanbtn').addEventListener('click',async()=>{
+  if(busy||!sample)return;const out=$('#scanout'),body=$('#scanbody');out.style.display='block';
+  if(!imgs.length){body.innerHTML='<p>আগে অন্তত একটি ছবি দিন।</p>';return}
+  if(!imgOK){body.innerHTML='<p>এই ভিউতে ছবি বিশ্লেষণ চালু নেই। লক্ষণগুলো লিখে "পরামর্শ চ্যাট"-এ জিজ্ঞেস করুন।</p>';return}
+  lock(true);
+  const info=[field('#s-crop','Crop'),field('#s-age','Plant age'),field('#s-count','Plants affected'),field('#s-when','Symptoms since'),field('#s-dist','District'),field('#s-chem','Recent fertilizer/pesticide'),field('#s-note','Other observations')].filter(Boolean).join('\n')||'(farmer gave no details)';
+  try{
+    reset(['scan','disease','pest','soil','solve','research']);
+    body.innerHTML='<p class="think">ছবির মান ও লক্ষণ পরীক্ষা করা হচ্ছে…</p>';
+    const s=await agent('scan','FARMER DETAILS:\n'+info+'\n\nAnalyze the '+imgs.length+' attached photo(s).',{images:imgs});
+    if(!s.t)throw{};
+    body.innerHTML='<p class="think">রোগ, পোকা, পুষ্টি ও যাচাই এজেন্টরা মিলিয়ে দেখছেন…</p>';
+    const ctx='FARMER DETAILS:\n'+info+'\n\nIMAGE SCANNER OBSERVATIONS:\n'+s.t;
+    const res=await pool(['disease','pest','soil','solve','research'],id=>agent(id,ctx+'\n\nGive your view based on these observations.'));
+    texts.scanout=await coordinate(RULES+'\n\n'+COORD_SCAN+'\n\n'+ctx+'\n\nSPECIALIST FINDINGS:\n'+findings(res),body);
+    body.insertAdjacentHTML('beforeend',notes([s,...res]));
+  }catch(e){body.innerHTML=errMsg(e);st('coord','err')}
+  lock(false);
+});
+
+/* planner */
+$('#planbtn').addEventListener('click',async()=>{
+  if(busy||!sample)return;lock(true);const out=$('#planout'),body=$('#planbody');out.style.display='block';
+  const info=[field('#p-loc','District and upazila'),'Land: '+$('#p-land').value+' '+$('#p-unit').value,field('#p-bud','Budget (BDT)'),field('#p-soil','Soil type'),field('#p-ph','Soil pH'),field('#p-water','Water availability'),field('#p-irr','Irrigation'),field('#p-crops','Preferred crops'),field('#p-exp','Experience'),field('#p-season','Season'),field('#p-goal','Objective'),field('#p-price','Local market prices given by farmer')].filter(Boolean).join('\n');
+  try{
+    const ids=['veg','season','soil','irri','pest','disease','biz'];reset([...ids,'plan']);
+    body.innerHTML='<p class="think">৭ জন বিশেষজ্ঞ আপনার জমির তথ্য বিশ্লেষণ করছেন…</p>';
+    const ctx='FARMER INFORMATION FOR A FARMING PLAN:\n'+info;
+    const res=await pool(ids,id=>agent(id,ctx+'\n\nGive your part of the farming plan for this farmer.'));
+    texts.planout=await coordinate(RULES+'\n\n'+COORD_PLAN+'\n\n'+ctx+'\n\nSPECIALIST FINDINGS:\n'+findings(res),body,['plan']);
+    body.insertAdjacentHTML('beforeend',notes(res));
+  }catch(e){body.innerHTML=errMsg(e);st('coord','err')}
+  lock(false);
+});
+
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-copy]');if(!b)return;try{await navigator.clipboard.writeText(texts[b.dataset.copy]||'');b.textContent='কপি হয়েছে'}catch(x){b.textContent='কপি করা যায়নি'}setTimeout(()=>b.textContent='কপি করুন',1800)});
+
+/* tabs */
+const show=()=>{const v=['chat','scan','plan'].includes(location.hash.slice(1))?location.hash.slice(1):'chat';document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v))};
+addEventListener('hashchange',show);show();
+
+lock(false);
+/* server connection (Render): every agent call goes to /api/agent, which holds the API key */
+let CODE='';try{CODE=localStorage.getItem('krishi_code')||''}catch(e){}
+const toDataURL=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+async function serverSample(prompt,o={}){
+  const images=o.images?await Promise.all(o.images.map(toDataURL)):[];
+  const r=await fetch('/api/agent',{method:'POST',headers:{'Content-Type':'application/json','x-access-code':CODE},body:JSON.stringify({prompt,tier:o.modelTier==='quick'?'quick':'default',images})});
+  if(!r.ok){let j={};try{j=await r.json()}catch(e){}if(j.error==='not_granted')askCode();throw{code:j.error||'error'}}
+  const rd=r.body.getReader(),dec=new TextDecoder();let text='';
+  for(;;){const{done,value}=await rd.read();if(done)break;text+=dec.decode(value,{stream:true});if(o.onText)o.onText({text:text.replace(/\n*\[\[ERROR:\w+\]\]$/,'')})}
+  const m=text.match(/\[\[ERROR:(\w+)\]\]$/);if(m)throw{code:m[1]};
+  return{text};
+}
+function askCode(){
+  const b=$('#banner');b.style.display='block';
+  b.innerHTML='<form id="codef" class="ask" style="margin:0"><input id="code" type="password" placeholder="অ্যাক্সেস কোড লিখুন"><button class="go">চালু করুন</button></form>';
+  $('#codef').addEventListener('submit',e=>{e.preventDefault();CODE=$('#code').value.trim();try{localStorage.setItem('krishi_code',CODE)}catch(x){}b.style.display='none'});
+}
+const fail=()=>{$('#banner').style.display='block';lock(false)};
+fetch('/api/config').then(r=>r.json()).then(c=>{sample=serverSample;imgOK=!!c.images;lock(false);if(c.needsCode&&!CODE)askCode()}).catch(fail);
+}
+</script>
+</body>
+</html>
